@@ -1,332 +1,424 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSE成績計算器</title>
-    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.15.0/umd/lucide.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Noto Sans SC', sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            padding: 16px;
         }
-        .subject-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
         }
-        .subject-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
         }
-        .result-card {
-            animation: fadeIn 0.5s ease-out;
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
         }
-        .grade-5xx { background-color: #4f46e5; }
-        .grade-5x { background-color: #6366f1; }
-        .grade-5 { background-color: #818cf8; }
-        .grade-4 { background-color: #a5b4fc; }
-        .grade-3 { background-color: #c7d2fe; }
-        .grade-2 { background-color: #e0e7ff; }
-        .grade-1 { background-color: #f1f5fe; }
-        .header-gradient {
-            background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            color: #2563eb;
         }
-        .input-hover:focus {
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 32px;
         }
-        .pulse {
-            animation: pulse 2s infinite;
+
+        .warning {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+
+        .warning h3 {
+            color: #991b1b;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .warning p {
+            color: #7f1d1d;
+            font-size: 0.875rem;
+        }
+
+        .subject-section {
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .subject-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .english { background: #eff6ff; }
+        .english h2 { color: #1e40af; }
+
+        .chinese { background: #fef2f2; }
+        .chinese h2 { color: #991b1b; }
+
+        .math { background: #f0fdf4; }
+        .math h2 { color: #166534; }
+
+        .citizenship { background: #faf5ff; }
+        .citizenship h2 { color: #7c2d12; }
+
+        .electives { background: #fff7ed; }
+        .electives h2 { color: #ea580c; }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 24px;
+        }
+
+        .result-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .result-grade {
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .best5-section {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .note {
+            margin-top: 24px;
+            padding: 16px;
+            background: #fefce8;
+            border-radius: 8px;
+        }
+
+        .note p {
+            font-size: 0.875rem;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen p-4">
-    <div class="max-w-4xl mx-auto">
-        <div class="header-gradient text-white rounded-xl shadow-xl p-6 mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-calculator text-3xl"></i>
-                <h1 class="text-3xl font-bold">DSE成績計算器</h1>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <h1>DSE成績計算器</h1>
             </div>
-            <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                <i class="fas fa-info-circle"></i>
-                <span>基於歷年Cut Off數據</span>
+            <p class="subtitle">基於歷年Cut Off數據，支援分卷計分</p>
+
+            <div id="warnings" class="warning hidden">
+                <h3>⚠️ 注意事項</h3>
+                <div id="warning-messages"></div>
             </div>
+
+            <!-- 英文科目 -->
+            <div class="subject-section english">
+                <h2>📖 英文科（滿分100分）</h2>
+                <div class="grid grid-4">
+                    <div class="form-group">
+                        <label>卷一 (25%)</label>
+                        <input type="number" id="englishP1" min="0" max="100" placeholder="0-100">
+                    </div>
+                    <div class="form-group">
+                        <label>卷二 (25%)</label>
+                        <input type="number" id="englishP2" min="0" max="100" placeholder="0-100">
+                    </div>
+                    <div class="form-group">
+                        <label>卷三 (35%)</label>
+                        <input type="number" id="englishP3" min="0" max="100" placeholder="0-100">
+                    </div>
+                    <div class="form-group">
+                        <label>卷四 (15%)</label>
+                        <input type="number" id="englishP4" min="0" max="100" placeholder="0-100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中文科目 -->
+            <div class="subject-section chinese">
+                <h2>📖 中文科（滿分100分）</h2>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>卷一 (50%)</label>
+                        <input type="number" id="chineseP1" min="0" max="100" placeholder="0-100">
+                    </div>
+                    <div class="form-group">
+                        <label>卷二 (50%)</label>
+                        <input type="number" id="chineseP2" min="0" max="100" placeholder="0-100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 數學科目 -->
+            <div class="subject-section math">
+                <h2>📖 數學科（滿分100分）</h2>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>卷一 (65%)</label>
+                        <input type="number" id="mathP1" min="0" max="100" placeholder="0-100">
+                    </div>
+                    <div class="form-group">
+                        <label>卷二 (35%)</label>
+                        <input type="number" id="mathP2" min="0" max="100" placeholder="0-100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 公民科 -->
+            <div class="subject-section citizenship">
+                <h2>公民與社會發展科</h2>
+                <select id="citizenship">
+                    <option value="達標">達標</option>
+                    <option value="未達標">未達標</option>
+                </select>
+            </div>
+
+            <!-- 選修科目 -->
+            <div class="subject-section electives">
+                <h2>選修科目</h2>
+                <div class="form-group">
+                    <div class="grid grid-2">
+                        <div>
+                            <label>選修1科目</label>
+                            <select id="elective1Subject">
+                                <option value="">請選擇科目</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Economics">Economics</option>
+                                <option value="Chinese History">Chinese History</option>
+                                <option value="Geography">Geography</option>
+                                <option value="ICT">ICT</option>
+                                <option value="M1">M1</option>
+                                <option value="M2">M2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>分數 (0-100)</label>
+                            <input type="number" id="elective1Score" min="0" max="100" placeholder="0-100">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="grid grid-2">
+                        <div>
+                            <label>選修2科目</label>
+                            <select id="elective2Subject">
+                                <option value="">請選擇科目</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Economics">Economics</option>
+                                <option value="Chinese History">Chinese History</option>
+                                <option value="Geography">Geography</option>
+                                <option value="ICT">ICT</option>
+                                <option value="M1">M1</option>
+                                <option value="M2">M2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>分數 (0-100)</label>
+                            <input type="number" id="elective2Score" min="0" max="100" placeholder="0-100">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="grid grid-2">
+                        <div>
+                            <label>選修3科目</label>
+                            <select id="elective3Subject">
+                                <option value="">請選擇科目</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Economics">Economics</option>
+                                <option value="Chinese History">Chinese History</option>
+                                <option value="Geography">Geography</option>
+                                <option value="ICT">ICT</option>
+                                <option value="M1">M1</option>
+                                <option value="M2">M2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>分數 (0-100)</label>
+                            <input type="number" id="elective3Score" min="0" max="100" placeholder="0-100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="calculateResults()">計算成績</button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-xl p-6 mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">輸入你的DSE成績</h2>
-                    <p class="text-gray-600">輸入各科分卷分數，系統將自動計算等級和總分</p>
-                </div>
-                
-            <div id="warningsContainer" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center gap-2 mb-2">
-                    <i class="fas fa-exclamation-triangle text-red-600"></i>
-                    <h3 class="font-semibold text-red-800">注意事項</h3>
-                </div>
-                <div id="warningsList"></div>
+        <!-- 結果顯示 -->
+        <div id="results" class="card results">
+            <h2>✅ 計算結果</h2>
+
+            <!-- 核心科目結果 -->
+            <div class="result-section">
+                <h3>核心科目成績</h3>
+                <div id="coreResults"></div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- 中文科 -->
-                <div class="subject-card bg-red-50 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="fas fa-book text-red-700"></i>
-                        <h3 class="text-lg font-semibold text-red-800">中文科</h3>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷一 (50%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-red-500" id="chineseP1" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷二 (50%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-red-500" id="chineseP2" placeholder="0-100">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 英文科 -->
-                <div class="subject-card bg-blue-50 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="fas fa-book text-blue-700"></i>
-                        <h3 class="text-lg font-semibold text-blue-800">英文科</h3>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷一 (25%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-blue-500" id="englishP1" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷二 (25%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-blue-500" id="englishP2" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷三 (35%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-blue-500" id="englishP3" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷四 (15%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-blue-500" id="englishP4" placeholder="0-100">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 數學科 -->
-                <div class="subject-card bg-green-50 rounded-xl p-5">
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="fas fa-book text-green-700"></i>
-                        <h3 class="text-lg font-semibold text-green-800">數學科</h3>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷一 (65%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-green-500" id="mathP1" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">卷二 (35%)</label>
-                            <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-green-500" id="mathP2" placeholder="0-100">
-                        </div>
-                    </div>
-                </div>
+            <!-- 選修科目結果 -->
+            <div id="electiveResults" class="result-section hidden">
+                <h3>選修科目成績</h3>
+                <div id="electiveResultsContent"></div>
             </div>
 
-            <!-- 公民科和選修科 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="subject-card bg-purple-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-purple-800 mb-4">公民與社會發展科</h3>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" id="citizenship">
-                        <option value="達標">達標</option>
-                        <option value="未達標">未達標</option>
-                    </select>
-                </div>
-
-                <div class="subject-card bg-orange-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-orange-800 mb-4">選修科目</h3>
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">科目1</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" id="elective1Subject">
-                                    <option value="">請選擇科目</option>
-                                    <option value="Biology">生物</option>
-                                    <option value="Chemistry">化學</option>
-                                    <option value="Physics">物理</option>
-                                    <option value="Economics">經濟</option>
-                                    <option value="Chinese History">中史</option>
-                                    <option value="Geography">地理</option>
-                                    <option value="ICT">資訊及通訊科技</option>
-                                    <option value="M1">數學延伸部分M1</option>
-                                    <option value="M2">數學延伸部分M2</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">分數</label>
-                                <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-orange-500" id="elective1Score" placeholder="0-100">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">科目2</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" id="elective2Subject">
-                                    <option value="">請選擇科目</option>
-                                    <option value="Biology">生物</option>
-                                    <option value="Chemistry">化學</option>
-                                    <option value="Physics">物理</option>
-                                    <option value="Economics">經濟</option>
-                                    <option value="Chinese History">中史</option>
-                                    <option value="Geography">地理</option>
-                                    <option value="ICT">資訊及通訊科技</option>
-                                    <option value="M1">數學延伸部分M1</option>
-                                    <option value="M2">數學延伸部分M2</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">分數</label>
-                                <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-orange-500" id="elective2Score" placeholder="0-100">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">科目3</label>
-                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" id="elective3Subject">
-                                    <option value="">請選擇科目</option>
-                                    <option value="Biology">生物</option>
-                                    <option value="Chemistry">化學</option>
-                                    <option value="Physics">物理</option>
-                                    <option value="Economics">經濟</option>
-                                    <option value="Chinese History">中史</option>
-                                    <option value="Geography">地理</option>
-                                    <option value="ICT">資訊及通訊科技</option>
-                                    <option value="M1">數學延伸部分M1</option>
-                                    <option value="M2">數學延伸部分M2</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">分數</label>
-                                <input type="number" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg input-hover focus:ring-2 focus:ring-orange-500" id="elective3Score" placeholder="0-100">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Best 5 結果 -->
+            <div class="best5-section">
+                <h3>Best 5 計算結果</h3>
+                <div id="best5Results"></div>
+                <div id="best5Combination"></div>
             </div>
 
-            <button id="calculateBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-800 transition duration-300 pulse flex items-center justify-center gap-2">
-                <i class="fas fa-calculator"></i> 計算成績
-            </button>
-        </div>
-
-        <div id="resultsContainer" class="hidden result-card bg-white rounded-xl shadow-xl p-6">
-            <div class="flex items-center gap-3 mb-6">
-                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
-                <h2 class="text-2xl font-bold text-gray-800">計算結果</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-gray-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">核心科目成績</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-3 bg-white rounded-lg border">
-                            <span class="font-medium">中文</span>
-                            <div class="flex items-center gap-3">
-                                <span id="chineseScore" class="font-semibold">--分</span>
-                                <span id="chineseGrade" class="grade-1 px-3 py-1 rounded-full text-sm font-bold">--</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-white rounded-lg border">
-                            <span class="font-medium">英文</span>
-                            <div class="flex items-center gap-3">
-                                <span id="englishScore" class="font-semibold">--分</span>
-                                <span id="englishGrade" class="grade-1 px-3 py-1 rounded-full text-sm font-bold">--</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-white rounded-lg border">
-                            <span class="font-medium">數學</span>
-                            <div class="flex items-center gap-3">
-                                <span id="mathScore" class="font-semibold">--分</span>
-                                <span id="mathGrade" class="grade-1 px-3 py-1 rounded-full text-sm font-bold">--</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-white rounded-lg border">
-                            <span class="font-medium">公民與社會發展科</span>
-                            <span id="citizenshipResult" class="font-semibold text-green-600">達標</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-xl p-5">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">選修科目成績</h3>
-                    <div id="electivesResults" class="space-y-3">
-                        <div class="text-center py-8 text-gray-400">
-                            <i class="fas fa-book-open text-3xl mb-2"></i>
-                            <p>請輸入選修科目成績</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4">Best 5 計算結果</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white p-4 rounded-lg border text-center">
-                        <p class="text-sm text-gray-600 mb-1">Best 5 原始總分</p>
-                        <p id="best5Total" class="text-2xl font-bold text-blue-600">--</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg border text-center">
-                        <p class="text-sm text-gray-600 mb-1">Best 5 等級總分</p>
-                        <p id="best5Points" class="text-2xl font-bold text-indigo-600">--</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg border text-center">
-                        <p class="text-sm text-gray-600 mb-1">學校加權平均分</p>
-                        <p id="schoolWeighted" class="text-2xl font-bold text-purple-600">--</p>
-                    </div>
-                </div>
-                <div class="mt-6 p-4 bg-white rounded-lg border">
-                    <p class="text-sm text-gray-600 mb-2">Best 5 等級組合</p>
-                    <p id="best5Grades" class="font-semibold text-gray-800 text-center">--</p>
-                </div>
-            </div>
-
-            <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                <p class="text-sm text-yellow-800 mb-2">
-                    <strong><i class="fas fa-info-circle mr-1"></i>注：</strong>大學入學計分標準（5**=7分，5*=6分，5=5分，4=4分，3=3分，2=2分，1=1分）
-                </p>
-                <p class="text-sm text-yellow-800">
-                    <strong><i class="fas fa-calculator mr-1"></i>學校加權平均分計算：</strong>（中文+英文+數學）×3 + 選修科×2 然後除以15
-                </p>
+            <div class="note">
+                <p><strong>注：</strong>大學入學計分標準（5**=7分，5*=6分，5=5分，4=4分，3=3分，2=2分，1=1分）</p>
+                <p><strong>學校加權平均分計算：</strong>（中文+英文+數學）×3 + 選修科×2 然後除以15</p>
             </div>
         </div>
     </div>
 
     <script>
-        // 等级2的最低分數線（參考歷年數據）
+        // 等級2的最低分數線
         const grade2Cutoff = {
             english: 35,
             chinese: 40,
             math: 38
         };
 
-        // DOM元素引用
-        const calculateBtn = document.getElementById('calculateBtn');
-        const warningsContainer = document.getElementById('warningsContainer');
-        const warningsList = document.getElementById('warningsList');
-        const resultsContainer = document.getElementById('resultsContainer');
-
         // 計算總分
-        function calculateTotalScore(subject, p1, p2, p3 = 0, p4 = 0) {
+        function calculateTotalScore(subject, p1, p2, p3 = null, p4 = null) {
             if (subject === 'english') {
                 return p1 * 0.25 + p2 * 0.25 + p3 * 0.35 + p4 * 0.15;
             } else if (subject === 'chinese') {
@@ -339,69 +431,65 @@
 
         // 分數轉等級
         function scoreToGrade(score) {
-            if (score >= 90) return { grade: '5**', points: 7, class: 'grade-5xx' };
-            if (score >= 80) return { grade: '5*', points: 6, class: 'grade-5x' };
-            if (score >= 70) return { grade: '5', points: 5, class: 'grade-5' };
-            if (score >= 60) return { grade: '4', points: 4, class: 'grade-4' };
-            if (score >= 50) return { grade: '3', points: 3, class: 'grade-3' };
-            if (score >= 40) return { grade: '2', points: 2, class: 'grade-2' };
-            return { grade: '1', points: 1, class: 'grade-1' };
+            if (score >= 90) return { grade: '5**', points: 7 };
+            if (score >= 80) return { grade: '5*', points: 6 };
+            if (score >= 70) return { grade: '5', points: 5 };
+            if (score >= 60) return { grade: '4', points: 4 };
+            if (score >= 50) return { grade: '3', points: 3 };
+            if (score >= 40) return { grade: '2', points: 2 };
+            return { grade: '1', points: 1 };
         }
 
         // 計算學校加權平均分
         function calculateSchoolWeightedAverage(chineseTotal, englishTotal, mathTotal, electives) {
-            // 核心科目 × 3
             const coreWeighted = (chineseTotal + englishTotal + mathTotal) * 3;
-            
-            // 選修科目 × 2（最多計算3科）
             const electiveWeighted = electives.reduce((sum, elective) => sum + elective.score * 2, 0);
-            
-            // 總分除以15
             return (coreWeighted + electiveWeighted) / 15;
         }
 
-        // 驗證並計算成績
-        function validateAndCalculate() {
-            const newWarnings = [];
+        function calculateResults() {
+            const warnings = [];
             
-            // 獲取輸入值
-            const englishP1 = parseFloat(document.getElementById('englishP1').value) || 0;
-            const englishP2 = parseFloat(document.getElementById('englishP2').value) || 0;
-            const englishP3 = parseFloat(document.getElementById('englishP3').value) || 0;
-            const englishP4 = parseFloat(document.getElementById('englishP4').value) || 0;
+            // 取得分數
+            const englishTotal = calculateTotalScore('english', 
+                parseFloat(document.getElementById('englishP1').value) || 0,
+                parseFloat(document.getElementById('englishP2').value) || 0,
+                parseFloat(document.getElementById('englishP3').value) || 0,
+                parseFloat(document.getElementById('englishP4').value) || 0
+            );
             
-            const chineseP1 = parseFloat(document.getElementById('chineseP1').value) || 0;
-            const chineseP2 = parseFloat(document.getElementById('chineseP2').value) || 0;
+            const chineseTotal = calculateTotalScore('chinese',
+                parseFloat(document.getElementById('chineseP1').value) || 0,
+                parseFloat(document.getElementById('chineseP2').value) || 0
+            );
             
-            const mathP1 = parseFloat(document.getElementById('mathP1').value) || 0;
-            const mathP2 = parseFloat(document.getElementById('mathP2').value) || 0;
-            
-            const citizenship = document.getElementById('citizenship').value;
-            
-            // 計算核心科目總分
-            const englishTotal = calculateTotalScore('english', englishP1, englishP2, englishP3, englishP4);
-            const chineseTotal = calculateTotalScore('chinese', chineseP1, chineseP2);
-            const mathTotal = calculateTotalScore('math', mathP1, mathP2);
+            const mathTotal = calculateTotalScore('math',
+                parseFloat(document.getElementById('mathP1').value) || 0,
+                parseFloat(document.getElementById('mathP2').value) || 0
+            );
 
             // 檢查是否低於等級2分數線
             if (englishTotal < grade2Cutoff.english) {
-                newWarnings.push('英文總分低於等級2分數線，建議放棄此科目');
+                warnings.push('英文總分低於等級2分數線，建議放棄此科目');
             }
             if (chineseTotal < grade2Cutoff.chinese) {
-                newWarnings.push('中文總分低於等級2分數線，建議放棄此科目');
+                warnings.push('中文總分低於等級2分數線，建議放棄此科目');
             }
             if (mathTotal < grade2Cutoff.math) {
-                newWarnings.push('數學總分低於等級2分數線，建議放棄此科目');
+                warnings.push('數學總分低於等級2分數線，建議放棄此科目');
             }
 
-            // 顯示警告
-            if (newWarnings.length > 0) {
-                warningsList.innerHTML = newWarnings.map(warning => 
-                    `<p class="text-red-700 text-sm">${warning}</p>`
-                ).join('');
-                warningsContainer.classList.remove('hidden');
+            // 顯示/隱藏警告
+            const warningsDiv = document.getElementById('warnings');
+            const warningMessages = document.getElementById('warning-messages');
+            
+            if (warnings.length > 0) {
+                warningMessages.innerHTML = warnings.map(w => `<p>${w}</p>`).join('');
+                warningsDiv.classList.remove('hidden');
+                document.getElementById('results').classList.remove('show');
+                return;
             } else {
-                warningsContainer.classList.add('hidden');
+                warningsDiv.classList.add('hidden');
             }
 
             // 計算等級
@@ -411,33 +499,17 @@
 
             // 處理選修科目
             const electives = [];
-            const elective1Subject = document.getElementById('elective1Subject').value;
-            const elective1Score = parseFloat(document.getElementById('elective1Score').value) || 0;
-            const elective2Subject = document.getElementById('elective2Subject').value;
-            const elective2Score = parseFloat(document.getElementById('elective2Score').value) || 0;
-            const elective3Subject = document.getElementById('elective3Subject').value;
-            const elective3Score = parseFloat(document.getElementById('elective3Score').value) || 0;
-
-            if (elective1Subject && elective1Score > 0) {
-                electives.push({
-                    subject: elective1Subject,
-                    score: elective1Score,
-                    ...scoreToGrade(elective1Score)
-                });
-            }
-            if (elective2Subject && elective2Score > 0) {
-                electives.push({
-                    subject: elective2Subject,
-                    score: elective2Score,
-                    ...scoreToGrade(elective2Score)
-                });
-            }
-            if (elective3Subject && elective3Score > 0) {
-                electives.push({
-                    subject: elective3Subject,
-                    score: elective3Score,
-                    ...scoreToGrade(elective3Score)
-                });
+            for (let i = 1; i <= 3; i++) {
+                const subject = document.getElementById(`elective${i}Subject`).value;
+                const score = parseFloat(document.getElementById(`elective${i}Score`).value);
+                
+                if (subject && !isNaN(score)) {
+                    electives.push({
+                        subject: subject,
+                        score: score,
+                        ...scoreToGrade(score)
+                    });
+                }
             }
 
             // Best 5 計算
@@ -453,63 +525,92 @@
             const best5Total = best5.reduce((sum, subject) => sum + subject.score, 0);
             const best5Points = best5.reduce((sum, subject) => sum + subject.points, 0);
             
-            // 計算學校加權平均分
             const schoolWeightedAverage = calculateSchoolWeightedAverage(chineseTotal, englishTotal, mathTotal, electives);
+            const citizenship = document.getElementById('citizenship').value;
 
-            // 更新結果顯示
-            document.getElementById('chineseScore').textContent = chineseTotal.toFixed(1) + '分';
-            document.getElementById('chineseGrade').textContent = chineseGrade.grade;
-            document.getElementById('chineseGrade').className = `${chineseGrade.class} px-3 py-1 rounded-full text-sm font-bold text-white`;
+            // 顯示結果
+            displayResults({
+                coreSubjects: {
+                    chinese: { total: chineseTotal, ...chineseGrade },
+                    english: { total: englishTotal, ...englishGrade },
+                    math: { total: mathTotal, ...mathGrade }
+                },
+                electives,
+                best5,
+                best5Total: best5Total.toFixed(1),
+                best5Points,
+                schoolWeightedAverage: schoolWeightedAverage.toFixed(1),
+                citizenship
+            });
+        }
+
+        function displayResults(results) {
+            // 核心科目結果
+            const coreResults = document.getElementById('coreResults');
+            coreResults.innerHTML = `
+                <div class="result-item">
+                    <span>中文：${results.coreSubjects.chinese.total.toFixed(1)}分</span>
+                    <span class="result-grade">${results.coreSubjects.chinese.grade}</span>
+                </div>
+                <div class="result-item">
+                    <span>英文：${results.coreSubjects.english.total.toFixed(1)}分</span>
+                    <span class="result-grade">${results.coreSubjects.english.grade}</span>
+                </div>
+                <div class="result-item">
+                    <span>數學：${results.coreSubjects.math.total.toFixed(1)}分</span>
+                    <span class="result-grade">${results.coreSubjects.math.grade}</span>
+                </div>
+                <div class="result-item">
+                    <span>公民與社會發展科</span>
+                    <span style="color: #16a34a; font-weight: 600;">${results.citizenship}</span>
+                </div>
+            `;
+
+            // 選修科目結果
+            const electiveResults = document.getElementById('electiveResults');
+            const electiveResultsContent = document.getElementById('electiveResultsContent');
             
-            document.getElementById('englishScore').textContent = englishTotal.toFixed(1) + '分';
-            document.getElementById('englishGrade').textContent = englishGrade.grade;
-            document.getElementById('englishGrade').className = `${englishGrade.class} px-3 py-1 rounded-full text-sm font-bold text-white`;
-            
-            document.getElementById('mathScore').textContent = mathTotal.toFixed(1) + '分';
-            document.getElementById('mathGrade').textContent = mathGrade.grade;
-            document.getElementById('mathGrade').className = `${mathGrade.class} px-3 py-1 rounded-full text-sm font-bold text-white`;
-            
-            document.getElementById('citizenshipResult').textContent = citizenship;
-            
-            // 更新選修科目結果
-            const electivesResults = document.getElementById('electivesResults');
-            if (electives.length > 0) {
-                electivesResults.innerHTML = electives.map(elective => `
-                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border">
-                        <span class="font-medium">${elective.subject}</span>
-                        <div class="flex items-center gap-3">
-                            <span class="font-semibold">${elective.score.toFixed(1)}分</span>
-                            <span class="${elective.class} px-3 py-1 rounded-full text-sm font-bold text-white">${elective.grade}</span>
-                        </div>
+            if (results.electives.length > 0) {
+                electiveResults.classList.remove('hidden');
+                electiveResultsContent.innerHTML = results.electives.map(elective => `
+                    <div class="result-item">
+                        <span>${elective.subject}：${elective.score}分</span>
+                        <span class="result-grade">${elective.grade}</span>
                     </div>
                 `).join('');
             } else {
-                electivesResults.innerHTML = `
-                    <div class="text-center py-8 text-gray-400">
-                        <i class="fas fa-book-open text-3xl mb-2"></i>
-                        <p>未輸入選修科目成績</p>
-                    </div>
-                `;
+                electiveResults.classList.add('hidden');
             }
-            
-            // 更新Best 5結果
-            document.getElementById('best5Total').textContent = best5Total.toFixed(1);
-            document.getElementById('best5Points').textContent = best5Points;
-            document.getElementById('schoolWeighted').textContent = schoolWeightedAverage.toFixed(1);
-            document.getElementById('best5Grades').textContent = best5.map(subject => subject.grade).join(' / ');
-            
-            // 顯示結果
-            resultsContainer.classList.remove('hidden');
-            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+            // Best 5 結果
+            const best5Results = document.getElementById('best5Results');
+            best5Results.innerHTML = `
+                <div class="result-item">
+                    <span>Best 5 原始總分：</span>
+                    <span class="result-grade">${results.best5Total}分</span>
+                </div>
+                <div class="result-item">
+                    <span>Best 5 等級總分（大學計分）：</span>
+                    <span class="result-grade">${results.best5Points}分</span>
+                </div>
+                <div class="result-item">
+                    <span>學校加權平均分：</span>
+                    <span class="result-grade">${results.schoolWeightedAverage}分</span>
+                </div>
+            `;
+
+            const best5Combination = document.getElementById('best5Combination');
+            best5Combination.innerHTML = `
+                <div style="margin-top: 16px; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 8px;">Best 5 等級組合：</p>
+                    <p style="font-weight: 600; color: #1f2937;">
+                        ${results.best5.map(subject => subject.grade).join(' / ')}
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('results').classList.add('show');
         }
-
-        // 綁定計算按鈕事件
-        calculateBtn.addEventListener('click', validateAndCalculate);
-
-        // 初始化頁面
-        document.addEventListener('DOMContentLoaded', function() {
-            
-        });
     </script>
 </body>
 </html>
