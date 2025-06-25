@@ -69,16 +69,7 @@
                     <h2 class="text-xl font-bold text-gray-800">輸入你的DSE成績</h2>
                     <p class="text-gray-600">輸入各科分卷分數，系統將自動計算等級和總分</p>
                 </div>
-                <div class="flex gap-3">
-                    <button class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg flex items-center gap-2">
-                        <i class="fas fa-history"></i> 歷史數據
-                    </button>
-                    <button class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg flex items-center gap-2">
-                        <i class="fas fa-book"></i> 計分說明
-                    </button>
-                </div>
-            </div>
-
+                
             <div id="warningsContainer" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                 <div class="flex items-center gap-2 mb-2">
                     <i class="fas fa-exclamation-triangle text-red-600"></i>
@@ -517,23 +508,7 @@
 
         // 初始化頁面
         document.addEventListener('DOMContentLoaded', function() {
-            // 添加一些示例數據方便測試
-            document.getElementById('englishP1').value = '78';
-            document.getElementById('englishP2').value = '82';
-            document.getElementById('englishP3').value = '75';
-            document.getElementById('englishP4').value = '85';
             
-            document.getElementById('chineseP1').value = '72';
-            document.getElementById('chineseP2').value = '68';
-            
-            document.getElementById('mathP1').value = '85';
-            document.getElementById('mathP2').value = '90';
-            
-            document.getElementById('elective1Subject').value = 'Chemistry';
-            document.getElementById('elective1Score').value = '88';
-            
-            document.getElementById('elective2Subject').value = 'Economics';
-            document.getElementById('elective2Score').value = '76';
         });
     </script>
 </body>
