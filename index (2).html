@@ -1,0 +1,464 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSE化學征途：元素煉金師</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; }
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 遊戲容器 -->
+    <div id="game-container">
+        <!-- 標題 -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-700 text-white p-6 shadow-lg">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl font-bold mb-2">🧪 DSE化學征途：元素煉金師</h1>
+                <p class="text-blue-100">融合香港DSE化學課程與角色扮演遊戲的沉浸式學習體驗</p>
+            </div>
+        </div>
+
+        <!-- 主要內容區 -->
+        <div class="max-w-4xl mx-auto p-6">
+            <!-- 訊息提示 -->
+            <div id="message-container" class="hidden mb-4 p-4 bg-green-100 border border-green-200 text-green-800 rounded-lg"></div>
+
+            <!-- 主選單 -->
+            <div id="main-view" class="animate-fade-in">
+                <!-- 玩家狀態卡片 -->
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg shadow-lg mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 id="player-name" class="text-2xl font-bold">見習化學家</h2>
+                            <p id="player-title" class="text-blue-100">化學學徒</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xl">👑</span>
+                                <span id="player-level" class="text-xl font-bold">等級  _
+
+1</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🪙</span>
+                                <span id="player-coins">50 金幣</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-1 mb-1">
+                                <span>⚔️</span>
+                                <span class="font-medium">攻擊力</span>
+                            </div>
+                            <span id="player-attack" class="text-lg font-bold">10</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-1 mb-1">
+                                <span>🛡️</span>
+                                <span class="font-medium">防禦力</span>
+                            </div>
+                            <span id="player-defense" class="text-lg font-bold">5</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex items-center justify-center gap-1 mb-1">
+                                <span>🎯</span>
+                                <span class="font-medium">精度</span>
+                            </div>
+                            <span id="player-accuracy" class="text-lg font-bold">60%</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>經驗值</span>
+                            <span id="exp-display">0/100</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-2">
+                            <div id="exp-bar" class="bg-yellow-400 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div id="accuracy-display" class="mt-4 text-center text-blue-100 hidden">
+                        答題準確率: <span id="accuracy-rate">0%</span> (<span id="correct-total">0/0</span>)
+                    </div>
+                </div>
+
+                <!-- 主選單按鈕 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="showTopics()" class="flex items-center justify-between p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">📚</span>
+                            <span class="font-medium">課題挑戰</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+
+                    <button onclick="showBosses()" class="flex items-center justify-between p-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">👹</span>
+                            <span class="font-medium">魔王挑戰</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+
+                    <button onclick="showShop()" class="flex items-center justify-between p-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🛒</span>
+                            <span class="font-medium">裝備商店</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+
+                    <button onclick="showAchievements()" class="flex items-center justify-between p-4 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🏆</span>
+                            <span class="font-medium">成就系統</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+
+                    <button onclick="showReport()" class="flex items-center justify-between p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">📊</span>
+                            <span class="font-medium">學習報告</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+
+                    <button onclick="saveGame()" class="flex items-center justify-between p-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors card-hover">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">💾</span>
+                            <span class="font-medium">儲存遊戲</span>
+                        </div>
+                        <span class="text-xl">➤</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 課題選單 -->
+            <div id="topics-view" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold gradient-text">🎯 DSE化學課題挑戰</h2>
+                    <button onclick="showMain()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">返回主選單</button>
+                </div>
+                <div id="topics-grid" class="grid gap-4"></div>
+            </div>
+
+            <!-- 挑戰界面 -->
+            <div id="challenge-view" class="hidden animate-fade-in">
+                <div class="max-w-2xl mx-auto space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 id="challenge-title" class="text-xl font-bold"></h2>
+                        <span id="question-counter" class="text-sm text-gray-600"></span>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                        <div class="mb-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span id="question-topic" class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded"></span>
+                                <span id="question-difficulty" class="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded"></span>
+                            </div>
+                            <h3 id="question-text" class="text-lg font-medium mb-4"></h3>
+                        </div>
+
+                        <div id="options-container" class="space-y-3 mb-6"></div>
+
+                        <div id="result-container" class="hidden mb-4"></div>
+
+                        <div class="flex justify-end">
+                            <button id="submit-btn" onclick="submitAnswer()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-lg transition-colors">提交答案</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 裝備商店 -->
+            <div id="shop-view" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold gradient-text">🛒 煉金師裝備商店</h2>
+                    <button onclick="showMain()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">返回主選單</button>
+                </div>
+                <div id="shop-grid" class="grid gap-4"></div>
+            </div>
+
+            <!-- 成就系統 -->
+            <div id="achievements-view" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold gradient-text">🏆 成就系統</h2>
+                        <p id="achievement-progress" class="text-gray-600">已解鎖：0/7</p>
+                    </div>
+                    <button onclick="showMain()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">返回主選單</button>
+                </div>
+                <div id="achievements-grid" class="grid gap-4"></div>
+            </div>
+
+            <!-- 學習報告 -->
+            <div id="report-view" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold gradient-text">📊 學習報告</h2>
+                    <button onclick="showMain()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">返回主選單</button>
+                </div>
+
+                <!-- 總體表現 -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6">
+                    <h3 class="text-lg font-medium mb-4">📈 總體表現</h3>
+                    <div id="overall-stats" class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <div id="total-questions" class="text-2xl font-bold text-blue-600">0</div>
+                            <div class="text-sm text-gray-600">答題總數</div>
+                        </div>
+                        <div class="text-center">
+                            <div id="correct-answers" class="text-2xl font-bold text-green-600">0</div>
+                            <div class="text-sm text-gray-600">正確答數</div>
+                        </div>
+                        <div class="text-center">
+                            <div id="accuracy-percentage" class="text-2xl font-bold text-purple-600">0%</div>
+                            <div class="text-sm text-gray-600">準確率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 課題完成度 -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <h3 class="text-lg font-medium mb-4">📚 課題完成度</h3>
+                    <div id="topic-progress" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- 魔王挑戰 -->
+            <div id="bosses-view" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold gradient-text">👹 知識魔王挑戰</h2>
+                    <button onclick="showMain()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors">返回主選單</button>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <div class="text-center mb-4">
+                        <span class="text-6xl">👹</span>
+                        <h3 class="text-xl font-bold mt-2">化學魔王</h3>
+                        <p class="text-gray-600">守導著DSE化學的終極知識，只有真正的化學大師才能擊敗它！</p>
+                    </div>
+                    <div class="flex justify-center">
+                        <button onclick="startBossChallenge('chemistry_demon')" class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">開始挑戰</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 魔王戰鬥界面 -->
+            <div id="boss-challenge-view" class="hidden animate-fade-in">
+                <div class="max-w-2xl mx-auto space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h2 id="boss-challenge-title" class="text-xl font-bold">👹 化學魔王</h2>
+                        <span id="boss-question-counter" class="text-sm text-gray-600"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-lg font-medium mb-2">魔王生命值</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="boss-hp-bar" class="bg-red-600 h-2 rounded-full progress-bar" style="width: 100%"></div>
+                            </div>
+                            <div id="boss-hp" class="text-sm text-gray-600 mt-1">150/150</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-medium mb-2">玩家生命值</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="player-hp-bar" class="bg-green-600 h-2 rounded-full progress-bar" style="width: 100%"></div>
+                            </div>
+                            <div id="player-hp" class="text-sm text-gray-600 mt-1">50/50</div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                        <div class="mb-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span id="boss-question-topic" class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded"></span>
+                                <span id="boss-question-difficulty" class="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded"></span>
+                            </div>
+                            <h3 id="boss-question-text" class="text-lg font-medium mb-4"></h3>
+                        </div>
+                        <div id="boss-options-container" class="space-y-3 mb-6"></div>
+                        <div id="boss-result-container" class="hidden mb-4"></div>
+                        <div class="flex justify-end">
+                            <button id="boss-submit-btn" onclick="submitBossAnswer()" class="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-lg transition-colors">提交答案</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲數據
+        let gameData = {
+            player: {
+                name: "見習化學家",
+                level: 1,
+                exp: 0,
+                exp_to_next: 100,
+                coins: 50,
+                attack: 10,
+                defense: 5,
+                accuracy: 60,
+                skill_points: 0,
+                title: "化學學徒",
+                equipment: {},
+                achievements: [],
+                topics_completed: [],
+                total_questions: 0,
+                correct_answers: 0,
+                boss_defeated: []
+            },
+            topics: {
+                "1": { name: "地球資源", icon: "🌍", progress: 0, total: 5 },
+                "2": { name: "微觀世界", icon: "⚛️", progress: 0, total: 5 },
+                "3": { name: "金屬", icon: "💎", progress: 0, total: 5 },
+                "4": { name: "酸鹼鹽", icon: "🧪", progress: 0, total: 5 },
+                "5": { name: "化石燃料", icon: "⛽", progress: 0, total: 5 },
+                "6": { name: "氧化還原反應", icon: "🔋", progress: 0, total: 5 },
+                "7": { name: "化學反應與能量", icon: "⚡", progress: 0, total: 5 },
+                "8": { name: "反應速率與平衡", icon: "⚖️", progress: 0, total: 5 },
+                "9": { name: "化學世界中的規律", icon: "📊", progress: 0, total: 5 }
+            },
+            bosses: {
+                "chemistry_demon": {
+                    name: "化學魔王",
+                    hp: 150,
+                    attack: 10,
+                    reward: { exp: 200, coins: 100 }
+                }
+            },
+            achievements: {
+                "電解大師": { description: "完成10個電解相關題目", reward: 50, unlocked: false },
+                "計算達人": { description: "連續10題計算全對", reward: 100, unlocked: false },
+                "實驗零失誤": { description: "完成所有實驗模擬無錯誤", reward: 200, unlocked: false },
+                "百題斬": { description: "回答100道題目", reward: 150, unlocked: false },
+                "知識收集者": { description: "完成5個課題", reward: 300, unlocked: false },
+                "魔王終結者": { description: "擊敗所有知識魔王", reward: 500, unlocked: false },
+                "完美主義者": { description: "答題準確率達到90%", reward: 250, unlocked: false }
+            }
+        };
+
+        // 題庫
+        const questionBank = {
+            "1": [
+                {
+                    question: "鐵礦石主要用哪種方法提取鐵？",
+                    options: ["A. 電解", "B. 碳還原", "C. 熱分解", "D. 物理分離"],
+                    answer: "B",
+                    explanation: "鐵礦石通常使用碳還原法提取鐵，在高溫下用一氧化碳還原氧化鐵。",
+                    topic: "金屬提取",
+                    difficulty: 2
+                },
+                {
+                    question: "以下哪種氣體會導致溫室效應？",
+                    options: ["A. 氧氣", "B. 氮氣", "C. 二氧化碳", "D. 氫氣"],
+                    answer: "C",
+                    explanation: "二氧化碳是主要的溫室氣體之一，能吸收地面輻射的紅外線。",
+                    topic: "環境化學",
+                    difficulty: 1
+                },
+                {
+                    question: "石灰石的主要成分是什麼？",
+                    options: ["A. CaO", "B. CaCO₃", "C. Ca(OH)₂", "D. CaSO₄"],
+                    answer: "B",
+                    explanation: "石灰石的主要成分是碳酸鈣(CaCO₃)。",
+                    topic: "礦物",
+                    difficulty: 1
+                },
+                {
+                    question: "煤炭燃燒會產生哪種有害氣體？",
+                    options: ["A. O₂", "B. N₂", "C. SO₂", "D. H₂"],
+                    answer: "C",
+                    explanation: "煤炭含有硫化合物，燃燒時會產生二氧化硫，導致酸雨。",
+                    topic: "燃料化學",
+                    difficulty: 2
+                },
+                {
+                    question: "海水中含量最多的鹽類是？",
+                    options: ["A. NaCl", "B. MgCl₂", "C. CaCl₂", "D. KCl"],
+                    answer: "A",
+                    explanation: "海水中含量最多的鹽類是氯化鈉(NaCl)，約佔總鹽分的77%。",
+                    topic: "天然資源",
+                    difficulty: 2
+                }
+            ],
+            "2": [
+                {
+                    question: "原子核由什麼粒子組成？",
+                    options: ["A. 質子和電子", "B. 質子和中子", "C. 中子和電子", "D. 只有質子"],
+                    answer: "B",
+                    explanation: "原子核由質子和中子組成，電子在核外運動。",
+                    topic: "原子結構",
+                    difficulty: 1
+                },
+                {
+                    question: "碳-12原子的質量數是多少？",
+                    options: ["A. 6", "B. 12", "C. 18", "D. 24"],
+                    answer: "B",
+                    explanation: "質量數等於質子數加中子數，碳-12有
